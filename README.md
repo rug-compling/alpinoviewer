@@ -7,6 +7,8 @@ Install:
 
 TODO:
 
+ * [ ] wails i.p.v. gtk
+     * zie https://wails.io/docs/guides/dynamic-assets
  * [ ] usage()
  * [ ] check args
  * [ ] xml van stdin
