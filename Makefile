@@ -1,0 +1,2 @@
+alpinoviewer: *.go
+	go build .
