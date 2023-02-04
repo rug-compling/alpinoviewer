@@ -1,4 +1,8 @@
-in ontwikkeling
+**In ontwikkeling**
+
+Install:
+
+    go install github.com/rug-compling/alpinoviewer@latest
 
 
 TODO:
