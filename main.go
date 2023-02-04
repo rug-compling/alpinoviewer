@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 
 	"github.com/pebbe/util"
@@ -20,6 +19,6 @@ func main() {
 
 	tree(b, &buf)
 
-	fmt.Println(buf.String())
+	run(buf.String(), os.Args[1])
 
 }

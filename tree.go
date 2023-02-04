@@ -381,6 +381,8 @@ table.attr tr td.lbl {
 	}
 	// EIND: svg nabewerken en printen
 
+	fmt.Fprint(fp, "</div>\n<p>\n")
+
 	conllu2svg(fp, 1, &alpino, ctx, data)
 
 	fmt.Fprint(fp, "\n</body>\n</html>\n")
