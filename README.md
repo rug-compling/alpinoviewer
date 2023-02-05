@@ -13,5 +13,5 @@ TODO:
  * [ ] check args
  * [ ] xml van stdin
  * [ ] optie: geen UD
- * [ ] zoom in/uit
+ * [x] zoom in/uit
  * [ ] remote run, local X-server ?

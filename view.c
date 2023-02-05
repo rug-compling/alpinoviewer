@@ -34,6 +34,8 @@ char *view_ui =
     "  </object>\n"
     "</interface>\n";
 
+WebKitWebView *webview = NULL;
+
 G_MODULE_EXPORT gboolean web_view_key_pressed(WebKitWebView *web_view,
                                               GdkEventKey *event,
                                               gpointer user_data) {
@@ -41,6 +43,25 @@ G_MODULE_EXPORT gboolean web_view_key_pressed(WebKitWebView *web_view,
   if (event->keyval == GDK_KEY_q && (event->state & GDK_CONTROL_MASK)) {
     gtk_main_quit();
     return TRUE;
+  }
+  if (event->keyval == GDK_KEY_minus && (event->state & GDK_CONTROL_MASK)) {
+    gdouble lvl;
+    lvl = webkit_web_view_get_zoom_level (webview) - .05;
+    if (lvl < .2) {
+      lvl = .2;
+    }
+    webkit_web_view_set_zoom_level (webview, lvl);
+  }
+  if (event->keyval == GDK_KEY_equal && (event->state & GDK_CONTROL_MASK)) {
+    gdouble lvl;
+    lvl = webkit_web_view_get_zoom_level (webview) + .05;
+    if (lvl > 3) {
+      lvl = 3;
+    }
+    webkit_web_view_set_zoom_level (webview, lvl);
+  }
+  if (event->keyval == GDK_KEY_0 && (event->state & GDK_CONTROL_MASK)) {
+    webkit_web_view_set_zoom_level (webview, 1);
   }
 
   return FALSE;
@@ -87,7 +108,6 @@ void run(char const *url, char const *title) {
   GtkBuilder *builder;
   GError *error = NULL;
   GtkWidget *window, *box;
-  WebKitWebView *webview = NULL;
   WebKitSettings *settings = NULL;
 
   const gchar *quit_accels[2] = {"<Ctrl>Q", NULL};
