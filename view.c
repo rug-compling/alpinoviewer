@@ -110,8 +110,6 @@ void run(char const *url, char const *title) {
   GtkWidget *window, *box;
   WebKitSettings *settings = NULL;
 
-  const gchar *quit_accels[2] = {"<Ctrl>Q", NULL};
-
   gtk_init(NULL, NULL);
 
   builder = gtk_builder_new();
@@ -129,7 +127,6 @@ void run(char const *url, char const *title) {
 
   box = GTK_WIDGET(gtk_builder_get_object(builder, "my-box"));
   settings = webkit_settings_new();
-  /* webkit_settings_set_enable_webgl(settings, TRUE); */
   webkit_settings_set_default_font_size(settings, 18);
   webkit_settings_set_default_monospace_font_size(settings, 14);
   webkit_settings_set_default_charset(settings, "utf-8");
