@@ -36,11 +36,10 @@ import "C"
 //. Imports
 
 import (
-	"encoding/xml"
-
 	"github.com/rug-compling/alpinods"
 
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"html"
 	"io"
@@ -53,11 +52,14 @@ import (
 //. Structs
 
 type TreeContext struct {
+	//	marks    map[string]bool
 	refs     map[string]bool
-	mnodes   map[string]bool
+	mnodes   map[int]bool
 	graph    bytes.Buffer // definitie dot-bestand
 	start    int
 	words    []string
+	// ud1      map[string]bool
+	// ud2      map[string]bool
 	SkipThis map[int]bool
 	fp       io.Writer
 }
@@ -72,12 +74,38 @@ var (
 
 func tree(data []byte, fp io.Writer) {
 	ctx := &TreeContext{
+		//		marks:    make(map[string]bool), // node met vette rand en edges van en naar de node, inclusief coindex
 		refs:     make(map[string]bool),
-		mnodes:   make(map[string]bool),
+		mnodes:   make(map[int]bool), // gekleurde nodes in boom
 		words:    make([]string, 0),
+		// ud1:      make(map[string]bool),
+		// ud2:      make(map[string]bool),
 		SkipThis: make(map[int]bool),
 		fp:       fp,
 	}
+
+	if *optN != "" {
+		for _, m := range strings.Split(*optN, ",") {
+			i, err := strconv.Atoi(m)
+			if err == nil {
+				ctx.mnodes[i] = true
+			}
+		}
+	}
+
+	/*
+	if *optU != "" {
+		for _, m := range strings.Split(*optU, ",") {
+			ctx.ud1[m] = true
+		}
+	}
+
+	if *optE != "" {
+		for _, m := range strings.Split(*optE, ",") {
+			ctx.ud2[m] = true
+		}
+	}
+	*/
 
 	var alpino alpinods.AlpinoDS
 	x(xml.Unmarshal(data, &alpino))
@@ -398,10 +426,29 @@ func print_nodes(ctx *TreeContext, node *alpinods.Node) {
 	// Als dit een node met index is, dan in vierkant zetten.
 	// Als de node gemarkeerd is, dan in zwart, anders in lichtgrijs.
 	// Index als nummer in label zetten.
-	if node.Index > 0 {
-		idx = fmt.Sprintf("\\n%v", node.Index)
-		style += ", color=\"#d3d3d3\""
-		style += ", shape=box"
+	/*
+		if node.Index > 0 {
+			idx = fmt.Sprintf("\\n%v", node.Index)
+			black := false
+			if ctx.marks[node.Id] {
+				black = true
+			} else if ctx.refs[node.Index] && (len(node.NodeList) != 0 || node.Word != "") {
+				black = true
+			}
+			if black {
+				style += ", color=\"#000000\""
+			} else {
+				style += ", color=\"#d3d3d3\""
+			}
+			if ctx.mnodes[node.Id] {
+				style += ", style=filled, fillcolor=\"#7FCDBB\""
+			} else {
+				style += ", shape=box"
+			}
+		} else
+	*/
+	if ctx.mnodes[node.ID] {
+		style += ", color=\"#7FCDBB\", style=filled"
 	}
 
 	// attributen

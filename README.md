@@ -15,3 +15,6 @@ TODO:
  * [ ] optie: geen UD
  * [x] zoom in/uit
  * [ ] remote run, local X-server ?
+ * [x] markering van nodes in boom
+ * [ ] markering van paden in boom
+ * [ ] markering van woorden in UD/EUD ?
