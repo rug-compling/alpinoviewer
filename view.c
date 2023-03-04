@@ -4,7 +4,7 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-char *view_ui =
+char *view_ui_single =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<!-- Generated with glade 3.20.0 -->\n"
     "<interface>\n"
@@ -34,6 +34,59 @@ char *view_ui =
     "  </object>\n"
     "</interface>\n";
 
+char *view_ui_multi = "\
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+<!-- Generated with glade 3.40.0 -->\n\
+<interface>\n\
+  <requires lib=\"gtk+\" version=\"3.18\"/>\n\
+  <object class=\"GtkWindow\" id=\"main-window\">\n\
+    <property name=\"can-focus\">False</property>\n\
+    <property name=\"border-width\">5</property>\n\
+    <property name=\"title\" translatable=\"yes\">Alpino Viewer</property>\n\
+    <property name=\"default-width\">1600</property>\n\
+    <property name=\"default-height\">1000</property>\n\
+    <property name=\"icon-name\">face-monkey</property>\n\
+    <signal name=\"delete-event\" handler=\"delete_event\" swapped=\"no\"/>\n\
+    <signal name=\"destroy\" handler=\"destroy\" swapped=\"no\"/>\n\
+    <child>\n\
+      <object class=\"GtkPaned\" id=\"panels\">\n\
+        <property name=\"visible\">True</property>\n\
+        <property name=\"can-focus\">True</property>\n\
+        <child>\n\
+          <object class=\"GtkTreeView\" id=\"files\">\n\
+            <property name=\"visible\">True</property>\n\
+            <property name=\"can-focus\">True</property>\n\
+            <child internal-child=\"selection\">\n\
+              <object class=\"GtkTreeSelection\" id=\"file\"/>\n\
+            </child>\n\
+          </object>\n\
+          <packing>\n\
+            <property name=\"resize\">False</property>\n\
+            <property name=\"shrink\">True</property>\n\
+          </packing>\n\
+        </child>\n\
+        <child>\n\
+          <object class=\"GtkBox\" id=\"my-box\">\n\
+            <property name=\"visible\">True</property>\n\
+            <property name=\"can-focus\">False</property>\n\
+            <property name=\"orientation\">vertical</property>\n\
+            <child>\n\
+              <placeholder/>\n\
+            </child>\n\
+          </object>\n\
+          <packing>\n\
+            <property name=\"resize\">True</property>\n\
+            <property name=\"shrink\">True</property>\n\
+          </packing>\n\
+        </child>\n\
+      </object>\n\
+    </child>\n\
+  </object>\n\
+</interface>\n";
+
+int nfiles = 0;
+char const **filenames = NULL;
+
 WebKitWebView *webview = NULL;
 
 G_MODULE_EXPORT gboolean web_view_key_pressed(WebKitWebView *web_view,
@@ -46,22 +99,22 @@ G_MODULE_EXPORT gboolean web_view_key_pressed(WebKitWebView *web_view,
   }
   if (event->keyval == GDK_KEY_minus && (event->state & GDK_CONTROL_MASK)) {
     gdouble lvl;
-    lvl = webkit_web_view_get_zoom_level (webview) - .05;
+    lvl = webkit_web_view_get_zoom_level(webview) - .05;
     if (lvl < .2) {
       lvl = .2;
     }
-    webkit_web_view_set_zoom_level (webview, lvl);
+    webkit_web_view_set_zoom_level(webview, lvl);
   }
   if (event->keyval == GDK_KEY_equal && (event->state & GDK_CONTROL_MASK)) {
     gdouble lvl;
-    lvl = webkit_web_view_get_zoom_level (webview) + .05;
+    lvl = webkit_web_view_get_zoom_level(webview) + .05;
     if (lvl > 3) {
       lvl = 3;
     }
-    webkit_web_view_set_zoom_level (webview, lvl);
+    webkit_web_view_set_zoom_level(webview, lvl);
   }
   if (event->keyval == GDK_KEY_0 && (event->state & GDK_CONTROL_MASK)) {
-    webkit_web_view_set_zoom_level (webview, 1);
+    webkit_web_view_set_zoom_level(webview, 1);
   }
 
   return FALSE;
@@ -103,17 +156,37 @@ static void web_view_load_changed(WebKitWebView *web_view,
   }
 }
 
+static GtkTreeModel *create_and_fill_model(void) {
+  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+
+  /* Append a row and fill in some data */
+  GtkTreeIter iter;
+  for (int i = 0; i < nfiles; i++) {
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, filenames[i], -1);
+  }
+
+  return GTK_TREE_MODEL(store);
+}
+
+void setnfiles(int n) {
+  filenames = (char const **)malloc(n * sizeof(char const *));
+}
+
+void addfile(char const *filename) { filenames[nfiles++] = filename; }
+
 void run(char const *url, char const *title) {
   static char buf[1000];
   GtkBuilder *builder;
   GError *error = NULL;
-  GtkWidget *window, *box;
+  GtkWidget *window, *box, *files;
   WebKitSettings *settings = NULL;
 
   gtk_init(NULL, NULL);
 
   builder = gtk_builder_new();
-  if (!gtk_builder_add_from_string(builder, view_ui, -1, &error)) {
+  if (!gtk_builder_add_from_string(
+          builder, nfiles > 1 ? view_ui_multi : view_ui_single, -1, &error)) {
     g_snprintf(buf, 999, "%s", error->message);
     go_message(idERROR, buf);
     return;
@@ -123,6 +196,19 @@ void run(char const *url, char const *title) {
   window = GTK_WIDGET(gtk_builder_get_object(builder, "main-window"));
   if (strlen(title) > 0) {
     gtk_window_set_title(GTK_WINDOW(window), title);
+  }
+
+  if (nfiles > 1) {
+    files = GTK_WIDGET(gtk_builder_get_object(builder, "files"));
+    GtkCellRenderer *renderer;
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(
+        GTK_TREE_VIEW(files), -1, "Bestand", renderer, "text", 0, NULL);
+    GtkTreeModel *model = create_and_fill_model();
+    gtk_tree_view_set_model(GTK_TREE_VIEW(files), model);
+    g_object_unref(model);
+    g_signal_connect(files, "key-press-event", G_CALLBACK(web_view_key_pressed),
+                     NULL);
   }
 
   box = GTK_WIDGET(gtk_builder_get_object(builder, "my-box"));

@@ -33,7 +33,13 @@ func go_message(id int, cContent *C.char) {
 	chMessage <- msg{id: id, ms: content}
 }
 
-func run(content, title string) {
+func run(content, title string, filenames []string) {
+
+	C.setnfiles(C.int(len(filenames)))
+	for _, filename := range filenames {
+		cs := C.CString(filename)
+		C.addfile(cs)
+	}
 
 	tmpfile, err := ioutil.TempFile("/tmp", "alpinoview*.html")
 	x(err)

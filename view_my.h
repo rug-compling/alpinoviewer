@@ -5,4 +5,9 @@ enum ID { idERROR, idREADY, idDELETE, idDESTROY, idLOADED };
 
 void run(char const *, char const *);
 
+void setnfiles(int);
+
+void addfile(char const *);
+
+
 #endif
