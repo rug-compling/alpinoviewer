@@ -89,6 +89,24 @@ char const **filenames = NULL;
 
 WebKitWebView *webview = NULL;
 
+G_MODULE_EXPORT void tree_row_activated_cb(GtkTreeView *treeview,
+                                           GtkTreePath *path,
+                                           GtkTreeViewColumn *column,
+                                           gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *item;
+
+  model = gtk_tree_view_get_model(treeview);
+  if (gtk_tree_model_get_iter(model, &iter, path)) {
+    gtk_tree_model_get(model, &iter, 0, &item, -1);
+
+    g_print("You selected %s\n", item);
+
+    g_free(item);
+  }
+}
+
 G_MODULE_EXPORT gboolean web_view_key_pressed(WebKitWebView *web_view,
                                               GdkEventKey *event,
                                               gpointer user_data) {
@@ -209,6 +227,9 @@ void run(char const *url, char const *title) {
     g_object_unref(model);
     g_signal_connect(files, "key-press-event", G_CALLBACK(web_view_key_pressed),
                      NULL);
+
+    g_signal_connect(G_OBJECT(files), "row-activated",
+                     G_CALLBACK(tree_row_activated_cb), NULL);
   }
 
   box = GTK_WIDGET(gtk_builder_get_object(builder, "my-box"));
