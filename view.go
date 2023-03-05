@@ -9,6 +9,7 @@ package main
 import "C"
 
 import (
+	"bytes"
 	"io/ioutil"
 	"log"
 	"os"
@@ -22,9 +23,10 @@ type msg struct {
 }
 
 var (
-	chGtkDone = make(chan bool)
-	chGoDone  = make(chan bool)
-	chMessage = make(chan msg, 100)
+	chGtkDone   = make(chan bool)
+	chGoDone    = make(chan bool)
+	chMessage   = make(chan msg, 100)
+	tmpfilename string
 )
 
 //export go_message
@@ -43,7 +45,8 @@ func run(content, title string, filenames []string) {
 
 	tmpfile, err := ioutil.TempFile("/tmp", "alpinoview*.html")
 	x(err)
-	defer os.Remove(tmpfile.Name())
+	tmpfilename = tmpfile.Name()
+	defer os.Remove(tmpfilename)
 	_, err = tmpfile.Write([]byte(content))
 	x(err)
 	x(tmpfile.Close())
@@ -94,20 +97,38 @@ LOOP:
 }
 
 func doMessage(m msg) {
-	return
-
 	switch m.id {
 	default:
 		log.Printf("-- unknown message id %d: %q\n", m.id, m.ms)
 	case C.idERROR:
-		log.Printf("-- error: %s\n", m.ms)
+		//		log.Printf("-- error: %s\n", m.ms)
 	case C.idREADY:
-		log.Printf("-- ready: %s\n", m.ms)
+		//		log.Printf("-- ready: %s\n", m.ms)
 	case C.idDELETE:
-		log.Printf("-- delete event: %s\n", m.ms)
+		//		log.Printf("-- delete event: %s\n", m.ms)
 	case C.idDESTROY:
-		log.Printf("-- destroy event: %s\n", m.ms)
+		//		log.Printf("-- destroy event: %s\n", m.ms)
 	case C.idLOADED:
-		log.Printf("-- page loaded: %s\n", m.ms)
+		//		log.Printf("-- page loaded: %s\n", m.ms)
+	case C.idSELECT:
+		doFile(m.ms)
 	}
+}
+
+func doFile(filename string) {
+	b, err := os.ReadFile(filename)
+	x(err)
+
+	var buf bytes.Buffer
+
+	tree(b, &buf)
+
+	fp, err := os.Create(tmpfilename)
+	x(err)
+	fp.WriteString(buf.String())
+	fp.Close()
+
+	ct := C.CString(filename)
+	defer C.free(unsafe.Pointer(ct))
+	C.reload(ct)
 }

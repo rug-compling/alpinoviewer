@@ -88,6 +88,7 @@ int nfiles = 0;
 char const **filenames = NULL;
 
 WebKitWebView *webview = NULL;
+GtkWidget *window = NULL;
 
 G_MODULE_EXPORT void tree_row_activated_cb(GtkTreeView *treeview,
                                            GtkTreePath *path,
@@ -101,7 +102,7 @@ G_MODULE_EXPORT void tree_row_activated_cb(GtkTreeView *treeview,
   if (gtk_tree_model_get_iter(model, &iter, path)) {
     gtk_tree_model_get(model, &iter, 0, &item, -1);
 
-    g_print("You selected %s\n", item);
+    go_message(idSELECT, item);
 
     g_free(item);
   }
@@ -193,11 +194,17 @@ void setnfiles(int n) {
 
 void addfile(char const *filename) { filenames[nfiles++] = filename; }
 
+void reload(char const *title) {
+    gtk_window_set_title(GTK_WINDOW(window), title);
+    webkit_web_view_reload(webview);
+}
+
+
 void run(char const *url, char const *title) {
   static char buf[1000];
   GtkBuilder *builder;
   GError *error = NULL;
-  GtkWidget *window, *box, *files;
+  GtkWidget *box, *files;
   WebKitSettings *settings = NULL;
 
   gtk_init(NULL, NULL);
