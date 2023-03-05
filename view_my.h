@@ -1,7 +1,7 @@
 #ifndef _VIEW_MY_H_
 #define _VIEW_MY_H_
 
-enum ID { idERROR, idREADY, idDELETE, idDESTROY, idLOADED, idSELECT };
+enum ID { idERROR, idREADY, idDELETE, idDESTROY, idSELECT };
 
 void run(char const *, char const *);
 
