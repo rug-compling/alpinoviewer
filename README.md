@@ -20,3 +20,7 @@ TODO:
  * [ ] markering van woorden in UD/EUD ?
  * [x] meerdere bestanden
  * [ ] `*.xml.gz`
+ * [ ] `*.tar`
+ * [ ] `*.tar.gz`
+ * [ ] `*.zip`
+ * [ ] `*.dact`
