@@ -1,6 +1,6 @@
 github.com/pebbe/util v0.9.0 h1:PMZd+CpWb8GbWEmFGlL3qd6XPuywl6xFIbrXWi870OA=
 github.com/pebbe/util v0.9.0/go.mod h1:ynWl/SFX4+Seb9fpjVlYevr1f4TP7FrCmyZHiBCg69Q=
-github.com/rug-compling/alpinods v1.16.0 h1:p4dJ0H33cC/xP4l4UophRs7N5AdGfnUR7IS0tSNdWpc=
-github.com/rug-compling/alpinods v1.16.0/go.mod h1:R3BBX8RIw9InVqHZ+1W+MsX8WX8uBkoVNNGE38mqF1Q=
-github.com/rug-compling/alud/v2 v2.8.5 h1:9WLETGuODA0xHSRtmcyZQzfsUUEENlzmlXuBSbXChW4=
-github.com/rug-compling/alud/v2 v2.8.5/go.mod h1:O3FKkw5kvnLkN4jKuHlqaVMu/yC5xk2y4RU762t3UpU=
+github.com/rug-compling/alpinods v1.16.2 h1:fsbjU4hy6o6GSPlBIuCR3m5zZUtHsk95HMm2c34We30=
+github.com/rug-compling/alpinods v1.16.2/go.mod h1:R3BBX8RIw9InVqHZ+1W+MsX8WX8uBkoVNNGE38mqF1Q=
+github.com/rug-compling/alud/v2 v2.12.0 h1:BDfXlnuYm3POCH2w/5yL0TmE4EceGoKPoJ71yxW3hp0=
+github.com/rug-compling/alud/v2 v2.12.0/go.mod h1:8FHyFPDspqfJp4h9qXAzqZ6K6Koyt5OWTOdzsvg1OoE=
