@@ -13,6 +13,7 @@ TODO:
  * [x] check args
  * [x] xml van stdin
  * [ ] optie: geen UD
+ * [ ] optie: interne UD gebruiken
  * [x] zoom in/uit
  * [ ] remote run, local X-server ?
  * [x] markering van nodes in boom
