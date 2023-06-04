@@ -53,11 +53,19 @@ char *view_ui_multi = "\
         <property name=\"visible\">True</property>\n\
         <property name=\"can-focus\">True</property>\n\
         <child>\n\
-          <object class=\"GtkTreeView\" id=\"files\">\n\
+          <object class=\"GtkScrolledWindow\" id=\"filepanel\">\n\
             <property name=\"visible\">True</property>\n\
             <property name=\"can-focus\">True</property>\n\
-            <child internal-child=\"selection\">\n\
-              <object class=\"GtkTreeSelection\" id=\"file\"/>\n\
+            <property name=\"hscrollbar-policy\">never</property>\n\
+            <property name=\"shadow-type\">in</property>\n\
+            <child>\n\
+              <object class=\"GtkTreeView\" id=\"files\">\n\
+                <property name=\"visible\">True</property>\n\
+                <property name=\"can-focus\">True</property>\n\
+                <child internal-child=\"selection\">\n\
+                  <object class=\"GtkTreeSelection\" id=\"file\"/>\n\
+                </child>\n\
+              </object>\n\
             </child>\n\
           </object>\n\
           <packing>\n\
