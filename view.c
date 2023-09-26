@@ -1,5 +1,6 @@
 #include "_cgo_export.h"
 #include "view_my.h"
+#include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
