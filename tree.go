@@ -36,8 +36,6 @@ import "C"
 //. Imports
 
 import (
-	"github.com/rug-compling/alpinods"
-
 	"bytes"
 	"encoding/xml"
 	"fmt"
@@ -47,17 +45,19 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
+
+	"github.com/rug-compling/alpinods"
 )
 
 //. Structs
 
 type TreeContext struct {
 	//	marks    map[string]bool
-	refs     map[string]bool
-	mnodes   map[int]bool
-	graph    bytes.Buffer // definitie dot-bestand
-	start    int
-	words    []string
+	refs   map[string]bool
+	mnodes map[int]bool
+	graph  bytes.Buffer // definitie dot-bestand
+	start  int
+	words  []string
 	// ud1      map[string]bool
 	// ud2      map[string]bool
 	SkipThis map[int]bool
@@ -66,45 +66,40 @@ type TreeContext struct {
 
 //. Variables
 
-var (
-	treeMu sync.Mutex
-)
+var treeMu sync.Mutex
 
 //. Functies
 
-func tree(data []byte, fp io.Writer) {
+func tree(data []byte, fp io.Writer, filename string) {
 	ctx := &TreeContext{
 		//		marks:    make(map[string]bool), // node met vette rand en edges van en naar de node, inclusief coindex
-		refs:     make(map[string]bool),
-		mnodes:   make(map[int]bool), // gekleurde nodes in boom
-		words:    make([]string, 0),
+		refs:   make(map[string]bool),
+		mnodes: make(map[int]bool), // gekleurde nodes in boom
+		words:  make([]string, 0),
 		// ud1:      make(map[string]bool),
 		// ud2:      make(map[string]bool),
 		SkipThis: make(map[int]bool),
 		fp:       fp,
 	}
 
-	if *optN != "" {
-		for _, m := range strings.Split(*optN, ",") {
-			i, err := strconv.Atoi(m)
-			if err == nil {
-				ctx.mnodes[i] = true
-			}
+	if ids, ok := IDs[filename]; ok {
+		for _, id := range ids {
+			ctx.mnodes[id] = true
 		}
 	}
 
 	/*
-	if *optU != "" {
-		for _, m := range strings.Split(*optU, ",") {
-			ctx.ud1[m] = true
+		if *optU != "" {
+			for _, m := range strings.Split(*optU, ",") {
+				ctx.ud1[m] = true
+			}
 		}
-	}
 
-	if *optE != "" {
-		for _, m := range strings.Split(*optE, ",") {
-			ctx.ud2[m] = true
+		if *optE != "" {
+			for _, m := range strings.Split(*optE, ",") {
+				ctx.ud2[m] = true
+			}
 		}
-	}
 	*/
 
 	var alpino alpinods.AlpinoDS
@@ -246,7 +241,7 @@ table.attr tr {
     padding: 0px;
     margin: 0px;
 }
-		
+
 table.attr tr td {
     margin: 0px;
     padding: 0px;
@@ -334,7 +329,7 @@ table.attr tr td.lbl {
 `)
 
 	// Registreer alle markeringen van nodes met een verwijzing.
-	//set_refs(fp, alpino.Node)
+	// set_refs(fp, alpino.Node)
 
 	// Nodes
 	print_nodes(ctx, alpino.Node)
@@ -414,7 +409,6 @@ table.attr tr td.lbl {
 	conllu2svg(fp, 1, &alpino, ctx, data)
 
 	fmt.Fprint(fp, "\n</body>\n</html>\n")
-
 }
 
 //. Genereren van dot

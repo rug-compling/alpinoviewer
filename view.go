@@ -36,7 +36,6 @@ func go_message(id int, cContent *C.char) {
 }
 
 func run(content, title string, filenames []string) {
-
 	C.setnfiles(C.int(len(filenames)))
 	for _, filename := range filenames {
 		cs := C.CString(filename)
@@ -62,11 +61,11 @@ func run(content, title string, filenames []string) {
 	runtime.LockOSThread()
 
 	C.run(cs, ct)
-	//log.Println("Gtk done")
+	// log.Println("Gtk done")
 	close(chGtkDone)
 
 	<-chGoDone
-	//log.Println("All done")
+	// log.Println("All done")
 }
 
 func doStuff() {
@@ -119,7 +118,7 @@ func doFile(filename string) {
 
 	var buf bytes.Buffer
 
-	tree(b, &buf)
+	tree(b, &buf, filename)
 
 	fp, err := os.Create(tmpfilename)
 	x(err)
