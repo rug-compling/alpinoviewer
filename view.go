@@ -113,7 +113,7 @@ func doMessage(m msg) {
 }
 
 func doFile(filename string) {
-	b, err := os.ReadFile(filename)
+	b, err := getFile(filename)
 	x(err)
 
 	var buf bytes.Buffer

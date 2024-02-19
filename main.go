@@ -5,19 +5,24 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/pebbe/compactcorpus"
 	"github.com/pebbe/util"
 )
 
 var (
-	IDs  = make(map[string][]int)
-	x    = util.CheckErr
-	optN = flag.String("n", "", "gemarkeerde nodes in boom")
-	optI = flag.Bool("i", false, "filenames and id's from stdin")
+	reNumber  = regexp.MustCompile("[0-9]+")
+	IDs       = make(map[string][]int)
+	filenames = make([]string, 0)
+	stdin     string
+	x         = util.CheckErr
+	optN      = flag.String("n", "", "gemarkeerde nodes in boom")
+	optI      = flag.Bool("i", false, "filenames and id's from stdin")
 	// optU = flag.String("u", "", "gemarkeerde nodes in UD")
 	// optE = flag.String("e", "", "gemarkeerde nodes in extended UD")
 )
@@ -58,38 +63,18 @@ func main() {
 		return
 	}
 
-	var filenames []string
-
 	if *optI {
 		filenames = make([]string, 0)
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
-			aa := strings.SplitN(scanner.Text(), "\t", 2)
-			aa[0] = strings.TrimSpace(aa[0])
-			if aa[0] != "" {
-				filenames = append(filenames, aa[0])
-				if len(aa) == 2 {
-					ii := strings.Fields(aa[1])
-					ids := make([]int, len(ii))
-					for i, v := range ii {
-						ids[i], err = strconv.Atoi(v)
-						x(err)
-					}
-					IDs[aa[0]] = ids
-				}
-			}
+			doItem(scanner.Text())
+			// TODO: open display met eerste boom zodra eerst regel is ingelezen
 		}
 		x(scanner.Err())
-		b, err = os.ReadFile(filenames[0])
-		x(err)
 	} else if flag.NArg() > 0 {
 		filenames = flag.Args()
-		b, err = os.ReadFile(filenames[0])
-		x(err)
 	} else {
 		filenames = []string{""}
-		b, err = io.ReadAll(os.Stdin)
-		x(err)
 	}
 
 	if *optN != "" {
@@ -102,9 +87,108 @@ func main() {
 		IDs[filenames[0]] = id1
 	}
 
+	b, err = getFile(filenames[0])
+	x(err)
+
 	var buf bytes.Buffer
 
 	tree(b, &buf, filenames[0])
 
 	run(buf.String(), filenames[0], filenames)
+}
+
+func doItem(item string) {
+	i := strings.IndexAny(item, "\t|")
+	idlist := ""
+	if i > 0 {
+		idlist = item[i+1:]
+		item = item[:i]
+	}
+
+	item = strings.TrimSpace(item)
+	if len(item) == 0 {
+		return
+	}
+
+	ids := make([]int, 0)
+	for _, num := range reNumber.FindAllString(idlist, -1) {
+		id, err := strconv.Atoi(num)
+		x(err)
+		ids = append(ids, id)
+	}
+
+	if strings.HasSuffix(item, ".xml") {
+		filenames = append(filenames, item)
+		IDs[item] = ids
+		return
+	}
+
+	if strings.HasSuffix(item, ".dact") || strings.HasSuffix(item, ".dbxml") {
+		doDact(item)
+		return
+	}
+
+	if strings.HasSuffix(item, ".data.dz") || strings.HasSuffix(item, ".index") {
+		// TODO: als .data.dz en .index, dan niet beide inlezen
+		doCompact(item)
+		return
+	}
+
+	if strings.HasSuffix(item, ".zip") {
+		doZip(item)
+		return
+	}
+
+	doDir(item)
+}
+
+func doCompact(item string) {
+	cc, err := compactcorpus.Open(item)
+	x(err)
+	r, err := cc.NewRange()
+	x(err)
+	for r.HasNext() {
+		name, _ := r.Next()
+		filenames = append(filenames, item+"::"+name)
+	}
+}
+
+func doZip(item string) {
+	// TODO
+}
+
+func doDir(item string) {
+	// TODO
+}
+
+func getFile(name string) ([]byte, error) {
+	aa := strings.SplitN(name, "::", 2)
+	if len(aa) == 1 {
+		return ioutil.ReadFile(name)
+	}
+
+	if strings.HasSuffix(aa[0], ".dact") || strings.HasSuffix(aa[0], ".dbxml") {
+		return getDact(aa[0], aa[1])
+	}
+
+	if strings.HasSuffix(aa[0], ".data.dz") || strings.HasSuffix(aa[0], ".index") {
+		return getCompact(aa[0], aa[1])
+	}
+
+	if strings.HasSuffix(aa[0], ".zip") {
+		return getZip(aa[0], aa[1])
+	}
+
+	return []byte{}, fmt.Errorf("Unknown corpus type for %s", aa[0])
+}
+
+func getCompact(corpus, name string) ([]byte, error) {
+	cc, err := compactcorpus.RaOpen(corpus)
+	b, err := cc.Get(name)
+	cc.Close()
+	return b, err
+}
+
+func getZip(corpus, name string) ([]byte, error) {
+	return []byte{}, fmt.Errorf("getZip: TODO")
 }
