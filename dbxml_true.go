@@ -4,6 +4,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/pebbe/dbxml"
 )
 
@@ -13,7 +15,10 @@ func doDact(item string) {
 	docs, err := db.All()
 	x(err)
 	for docs.Next() {
-		filenames = append(filenames, item+"::"+docs.Name())
+		name := docs.Name()
+		if strings.HasSuffix(name, ".xml") {
+			filenames = append(filenames, item+"::"+name)
+		}
 	}
 	x(docs.Error())
 	db.Close()

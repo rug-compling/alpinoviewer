@@ -1,12 +1,18 @@
 package main
 
+// TODO: UD gebruiken uit xml-bestand, indien aanwezig
+// TODO: optie: save svg
+
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,9 +25,9 @@ var (
 	reNumber  = regexp.MustCompile("[0-9]+")
 	IDs       = make(map[string][]int)
 	filenames = make([]string, 0)
-	stdin     string
+	seen      = make(map[string]bool)
+	stdin     []byte
 	x         = util.CheckErr
-	optN      = flag.String("n", "", "gemarkeerde nodes in boom")
 	optI      = flag.Bool("i", false, "filenames and id's from stdin")
 	// optU = flag.String("u", "", "gemarkeerde nodes in UD")
 	// optE = flag.String("e", "", "gemarkeerde nodes in extended UD")
@@ -37,9 +43,8 @@ Syntax:
 
 Opties:
 
-    -i             : bestandsnamen en id's via stdin, één per regel
-                     bestandsnaam gevolgd door tab, gevolgd door id's gescheiden door spaties
-    -n ID1,ID2,... : IDs van nodes voor markering, gescheiden door komma
+    -i  : bestandsnamen en id's via stdin, één per regel
+          bestandsnaam gevolgd door tab, gevolgd door id's gescheiden door spaties
 
 Gebruik:
 
@@ -72,19 +77,11 @@ func main() {
 		}
 		x(scanner.Err())
 	} else if flag.NArg() > 0 {
-		filenames = flag.Args()
-	} else {
-		filenames = []string{""}
-	}
-
-	if *optN != "" {
-		aa := strings.Split(*optN, ",")
-		id1 := make([]int, len(aa))
-		for i, a := range aa {
-			id1[i], err = strconv.Atoi(strings.TrimSpace(a))
-			x(err)
+		for _, name := range flag.Args() {
+			doItem(name)
 		}
-		IDs[filenames[0]] = id1
+	} else {
+		filenames = []string{"<stdin>"}
 	}
 
 	b, err = getFile(filenames[0])
@@ -129,7 +126,6 @@ func doItem(item string) {
 	}
 
 	if strings.HasSuffix(item, ".data.dz") || strings.HasSuffix(item, ".index") {
-		// TODO: als .data.dz en .index, dan niet beide inlezen
 		doCompact(item)
 		return
 	}
@@ -139,29 +135,74 @@ func doItem(item string) {
 		return
 	}
 
-	doDir(item)
+	fi, err := os.Stat(item)
+	x(err)
+	if fi.IsDir() {
+		doDir(item)
+	}
 }
 
 func doCompact(item string) {
+	var s string
+	if strings.HasSuffix(item, ".data.dz") {
+		s = item[:len(item)-8]
+	} else {
+		s = item[:len(item)-6]
+	}
+	if seen[s] {
+		return
+	}
+	seen[s] = true
+
 	cc, err := compactcorpus.Open(item)
 	x(err)
 	r, err := cc.NewRange()
 	x(err)
 	for r.HasNext() {
 		name, _ := r.Next()
-		filenames = append(filenames, item+"::"+name)
+		if strings.HasSuffix(name, ".xml") {
+			filenames = append(filenames, item+"::"+name)
+		}
 	}
 }
 
 func doZip(item string) {
-	// TODO
+	zr, err := zip.OpenReader(item)
+	x(err)
+	for _, file := range zr.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+		name := file.Name
+		if strings.HasSuffix(name, ".xml") {
+			filenames = append(filenames, item+"::"+name)
+		}
+	}
 }
 
 func doDir(item string) {
-	// TODO
+	files, err := ioutil.ReadDir(item)
+	x(err)
+	for _, file := range files {
+		filename := file.Name()
+		if filename != "." && filename != ".." {
+			doItem(filepath.Join(item, filename))
+		}
+	}
 }
 
 func getFile(name string) ([]byte, error) {
+	if name == "<stdin>" {
+		if stdin == nil {
+			var err error
+			stdin, err = ioutil.ReadAll(os.Stdin)
+			if err != nil {
+				return []byte{}, err
+			}
+		}
+		return stdin, nil
+	}
+
 	aa := strings.SplitN(name, "::", 2)
 	if len(aa) == 1 {
 		return ioutil.ReadFile(name)
@@ -184,11 +225,24 @@ func getFile(name string) ([]byte, error) {
 
 func getCompact(corpus, name string) ([]byte, error) {
 	cc, err := compactcorpus.RaOpen(corpus)
+	if err != nil {
+		return []byte{}, err
+	}
 	b, err := cc.Get(name)
 	cc.Close()
 	return b, err
 }
 
 func getZip(corpus, name string) ([]byte, error) {
-	return []byte{}, fmt.Errorf("getZip: TODO")
+	zr, err := zip.OpenReader(corpus)
+	if err != nil {
+		return []byte{}, err
+	}
+	fp, err := zr.Open(name)
+	if err != nil {
+		return []byte{}, err
+	}
+	data, err := io.ReadAll(fp)
+	fp.Close()
+	return data, err
 }
