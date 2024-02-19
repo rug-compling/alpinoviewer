@@ -3,6 +3,12 @@ package main
 // TODO: UD gebruiken uit xml-bestand, indien aanwezig
 // TODO: optie: save svg
 
+/*
+#cgo LDFLAGS: -lX11
+#include <X11/Xlib.h>
+*/
+import "C"
+
 import (
 	"archive/zip"
 	"bufio"
@@ -57,6 +63,8 @@ Gebruik:
 }
 
 func main() {
+	C.XInitThreads()
+
 	flag.Usage = usage
 	flag.Parse()
 
