@@ -3,12 +3,6 @@ package main
 // TODO: UD gebruiken uit xml-bestand, indien aanwezig
 // TODO: optie: save svg
 
-/*
-#cgo LDFLAGS: -lX11
-#include <X11/Xlib.h>
-*/
-import "C"
-
 import (
 	"archive/zip"
 	"bufio"
@@ -63,8 +57,6 @@ Gebruik:
 }
 
 func main() {
-	C.XInitThreads()
-
 	flag.Usage = usage
 	flag.Parse()
 
@@ -90,6 +82,11 @@ func main() {
 		}
 	} else {
 		filenames = []string{"<stdin>"}
+	}
+
+	if len(filenames) == 0 {
+		fmt.Fprintln(os.Stderr, "No input files")
+		return
 	}
 
 	b, err = getFile(filenames[0])
