@@ -442,7 +442,7 @@ func print_nodes(ctx *TreeContext, node *alpinods.Node) {
 		} else
 	*/
 	if ctx.mnodes[node.ID] {
-		style += ", color=\"#7FCDBB\", style=filled"
+		style += ", color=\"#ffa07a\", style=filled"
 	}
 
 	// attributen
