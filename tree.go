@@ -420,27 +420,17 @@ func print_nodes(ctx *TreeContext, node *alpinods.Node) {
 	// Als dit een node met index is, dan in vierkant zetten.
 	// Als de node gemarkeerd is, dan in zwart, anders in lichtgrijs.
 	// Index als nummer in label zetten.
-	/*
-		if node.Index > 0 {
-			idx = fmt.Sprintf("\\n%v", node.Index)
-			black := false
-			if ctx.marks[node.Id] {
-				black = true
-			} else if ctx.refs[node.Index] && (len(node.NodeList) != 0 || node.Word != "") {
-				black = true
-			}
-			if black {
-				style += ", color=\"#000000\""
-			} else {
-				style += ", color=\"#d3d3d3\""
-			}
-			if ctx.mnodes[node.Id] {
-				style += ", style=filled, fillcolor=\"#7FCDBB\""
-			} else {
-				style += ", shape=box"
-			}
-		} else
-	*/
+
+	if node.Index > 0 {
+		idx = fmt.Sprintf("\\n%v", node.Index)
+		style += ", color=\"#d3d3d3\""
+		if ctx.mnodes[node.ID] {
+			style += ", style=filled, fillcolor=\"#ffa07a\""
+		} else {
+			style += ", shape=box"
+		}
+	} // else
+
 	if ctx.mnodes[node.ID] {
 		style += ", color=\"#ffa07a\", style=filled"
 	}
