@@ -55,9 +55,12 @@ type TreeContext struct {
 	//	marks    map[string]bool
 	refs   map[string]bool
 	mnodes map[int]bool
+	mwords map[int]bool
 	graph  bytes.Buffer // definitie dot-bestand
 	start  int
 	words  []string
+	inodes map[int]*alpinods.Node // Index -> Node
+	nodes  map[int]*alpinods.Node // ID -> Node
 	// ud1      map[string]bool
 	// ud2      map[string]bool
 	SkipThis map[int]bool
@@ -75,16 +78,48 @@ func tree(data []byte, fp io.Writer, filename string) {
 		//		marks:    make(map[string]bool), // node met vette rand en edges van en naar de node, inclusief coindex
 		refs:   make(map[string]bool),
 		mnodes: make(map[int]bool), // gekleurde nodes in boom
+		mwords: make(map[int]bool), // gekleurde woorden in de zin
 		words:  make([]string, 0),
+		inodes: make(map[int]*alpinods.Node),
+		nodes:  make(map[int]*alpinods.Node),
 		// ud1:      make(map[string]bool),
 		// ud2:      make(map[string]bool),
 		SkipThis: make(map[int]bool),
 		fp:       fp,
 	}
 
+	var alpino alpinods.AlpinoDS
+	x(xml.Unmarshal(data, &alpino))
+	var f1 func(*alpinods.Node)
+	f1 = func(node *alpinods.Node) {
+		ctx.nodes[node.ID] = node
+		if node.Index > 0 && (node.Word != "" || (node.Node != nil && len(node.Node) > 0)) {
+			ctx.inodes[node.Index] = node
+		}
+		if node.Node != nil {
+			for _, n := range node.Node {
+				f1(n)
+			}
+		}
+	}
+	f1(alpino.Node)
+
+	var f2 func(*alpinods.Node)
+	f2 = func(node *alpinods.Node) {
+		if node.Word != "" {
+			ctx.mwords[node.Begin] = true
+		} else if node.Node != nil && len(node.Node) > 0 {
+			for _, n := range node.Node {
+				f2(n)
+			}
+		} else if node.Index > 0 {
+			f2(ctx.inodes[node.Index])
+		}
+	}
 	if ids, ok := IDs[filename]; ok {
 		for _, id := range ids {
 			ctx.mnodes[id] = true
+			f2(ctx.nodes[id])
 		}
 	}
 
@@ -101,9 +136,6 @@ func tree(data []byte, fp io.Writer, filename string) {
 			}
 		}
 	*/
-
-	var alpino alpinods.AlpinoDS
-	x(xml.Unmarshal(data, &alpino))
 
 	title := html.EscapeString(alpino.Sentence.Sentence)
 	ctx.words = strings.Fields(title)
@@ -266,6 +298,9 @@ table.attr tr td.lbl {
   div.unidep {
     overflow-x: auto;
   }
+  span.mark {
+    background-color: #ffa07a;
+  }
   .udcontrol {
     margin-bottom: 200px;
   }
@@ -283,7 +318,7 @@ table.attr tr td.lbl {
 <em>%s</em>
 <p>
 <div style="overflow-x:auto">
-`, title, strings.Join(ctx.words, " "))
+`, title, mkSentence(ctx))
 
 	if alpino.Metadata != nil && len(alpino.Metadata.Meta) > 0 {
 		for _, m := range alpino.Metadata.Meta {
@@ -545,4 +580,27 @@ func indexes(s string) map[int]bool {
 		}
 	}
 	return m
+}
+
+func mkSentence(ctx *TreeContext) string {
+	var buf bytes.Buffer
+	marking := false
+	for i, word := range ctx.words {
+		if marking && !ctx.mwords[i] {
+			buf.WriteString("</span>")
+			marking = false
+		}
+		if i > 0 {
+			buf.WriteString(" ")
+		}
+		if !marking && ctx.mwords[i] {
+			buf.WriteString(`<span class="mark">`)
+			marking = true
+		}
+		buf.WriteString(word)
+	}
+	if marking {
+		buf.WriteString("</span>")
+	}
+	return buf.String()
 }
