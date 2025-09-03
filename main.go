@@ -7,6 +7,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
@@ -37,14 +38,18 @@ func usage() {
 	fmt.Printf(`
 Syntax:
 
-    %s [opties] file.xml
+    %s [opties] file(s)
     %s [opties] < file.xml
     find . -name '*.xml' | %s -i
+
+Filename can be directory, *.xml, *xml.gz, *.dact, *.data.dz, *.index
 
 Opties:
 
     -i  : bestandsnamen en id's via stdin, één per regel
           bestandsnaam gevolgd door tab, gevolgd door id's gescheiden door spaties
+          id's alleen voor xml-bestanden
+
 
 Gebruik:
 
@@ -119,7 +124,7 @@ func doItem(item string) {
 		ids = append(ids, id)
 	}
 
-	if strings.HasSuffix(item, ".xml") {
+	if strings.HasSuffix(item, ".xml") || strings.HasSuffix(item, ".xml.gz") {
 		filenames = append(filenames, item)
 		IDs[item] = ids
 		return
@@ -210,7 +215,21 @@ func getFile(name string) ([]byte, error) {
 
 	aa := strings.SplitN(name, "::", 2)
 	if len(aa) == 1 {
-		return ioutil.ReadFile(name)
+		if strings.HasSuffix(name, ".xml.gz") {
+			fp, err := os.Open(name)
+			if err != nil {
+				return []byte{}, err
+			}
+			defer fp.Close()
+			r, err := gzip.NewReader(fp)
+			if err != nil {
+				return []byte{}, err
+			}
+			defer r.Close()
+			return ioutil.ReadAll(r)
+		} else {
+			return ioutil.ReadFile(name)
+		}
 	}
 
 	if strings.HasSuffix(aa[0], ".dact") || strings.HasSuffix(aa[0], ".dbxml") {
