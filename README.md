@@ -1,8 +1,12 @@
 **In ontwikkeling**
 
-Install:
+Install with webkit2gtk version 4.0:
 
     go install github.com/rug-compling/alpinoviewer@latest
+
+Install with webkit2gtk version 4.1:
+
+    go install -tags wk41 github.com/rug-compling/alpinoviewer@latest
 
 
 TODO:
