@@ -9,6 +9,8 @@ import (
 	"github.com/pebbe/dbxml"
 )
 
+const optDact = " *.dact,"
+
 func doDact(item string) {
 	db, err := dbxml.OpenRead(item)
 	x(err)

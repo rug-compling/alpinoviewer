@@ -8,6 +8,14 @@ Install with webkit2gtk version 4.1:
 
     go install -tags wk41 github.com/rug-compling/alpinoviewer@latest
 
+Install without DbXML:
+
+    go install -tags nodbxml github.com/rug-compling/alpinoviewer@latest
+
+You can combine tags:
+
+    go install -tags wk41,nodbxml github.com/rug-compling/alpinoviewer@latest
+
 
 TODO:
 

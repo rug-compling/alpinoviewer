@@ -42,7 +42,7 @@ Syntax:
     %s [opties] < file.xml
     find . -name '*.xml' | %s -i
 
-Filename can be directory, *.xml, *xml.gz, *.dact, *.data.dz, *.index
+Filename can be directory, *.xml, *xml.gz,%s *.data.dz, *.index
 
 Opties:
 
@@ -58,7 +58,7 @@ Gebruik:
     Ctrl 0 : reset zoom
     Ctrl Q : exit
 
-`, os.Args[0], os.Args[0], os.Args[0])
+`, os.Args[0], os.Args[0], os.Args[0], optDact)
 }
 
 func main() {
