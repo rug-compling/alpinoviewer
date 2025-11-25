@@ -36,4 +36,4 @@ TODO:
  * [ ] `*.tar`
  * [ ] `*.tar.gz`
  * [ ] `*.zip`
- * [ ] `*.dact`
+ * [x] `*.dact`

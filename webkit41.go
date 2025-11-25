@@ -1,9 +1,11 @@
 //go:build wk41
+// +build wk41
 
 package main
 
 /*
 #cgo pkg-config: gtk+-3.0 webkit2gtk-4.1
 #cgo CFLAGS: -DGDK_DISABLE_DEPRECATED -D_doesnt_work_with_webkit_GTK_DISABLE_DEPRECATED
+#cgo LDFLAGS: -rdynamic
 */
 import "C"
