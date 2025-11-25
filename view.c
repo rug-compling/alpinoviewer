@@ -205,7 +205,14 @@ void run(char const *url, char const *title, int noHWAccel) {
     g_log_set_default_handler(myGLogFunc, NULL);
     */
 
-    gtk_init(NULL, NULL);
+    int argc = 1;
+    char **argv = (char **)malloc(2 * sizeof(char *));
+    argv[0] = strdup("alpinoviewer");
+    if (noHWAccel) {
+        argv[1] = strdup("--gegl-disable-opencl");
+        argc = 2;
+    }
+    gtk_init(&argc, &argv);
 
     builder = gtk_builder_new();
     if (!gtk_builder_add_from_string(
@@ -240,9 +247,6 @@ void run(char const *url, char const *title, int noHWAccel) {
     webkit_settings_set_default_monospace_font_size(settings, 14);
     webkit_settings_set_default_charset(settings, "utf-8");
     webkit_settings_set_default_font_family(settings, "serif");
-    if (noHWAccel)
-        webkit_settings_set_hardware_acceleration_policy(
-            settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
     webview = WEBKIT_WEB_VIEW(webkit_web_view_new_with_settings(settings));
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(webview), TRUE, TRUE, 0);
     webkit_web_view_load_uri(webview, url);
