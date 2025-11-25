@@ -189,7 +189,7 @@ void myGLogFunc(const gchar *log_domain, GLogLevelFlags log_level,
 }
 */
 
-void run(char const *url, char const *title) {
+void run(char const *url, char const *title, int noHWAccel) {
     static char buf[1000];
     GtkBuilder *builder;
     GError *error = NULL;
@@ -240,6 +240,9 @@ void run(char const *url, char const *title) {
     webkit_settings_set_default_monospace_font_size(settings, 14);
     webkit_settings_set_default_charset(settings, "utf-8");
     webkit_settings_set_default_font_family(settings, "serif");
+    if (noHWAccel)
+        webkit_settings_set_hardware_acceleration_policy(
+            settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
     webview = WEBKIT_WEB_VIEW(webkit_web_view_new_with_settings(settings));
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(webview), TRUE, TRUE, 0);
     webkit_web_view_load_uri(webview, url);

@@ -3,7 +3,7 @@
 
 enum ID { idERROR, idREADY, idDELETE, idDESTROY, idSELECT };
 
-void run(char const *, char const *);
+void run(char const *, char const *, int);
 
 void setnfiles(int);
 
