@@ -58,13 +58,7 @@ func run(content, title string, filenames []string) {
 
 	runtime.LockOSThread()
 
-	var ci C.int
-	ci = 0
-	if *optG {
-		ci = 1
-	}
-
-	C.run(cs, ct, ci)
+	C.run(cs, ct)
 	// log.Println("Gtk done")
 	close(chGtkDone)
 

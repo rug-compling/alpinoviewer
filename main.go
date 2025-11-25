@@ -30,7 +30,6 @@ var (
 	stdin     []byte
 	x         = util.CheckErr
 	optI      = flag.Bool("i", false, "filenames and id's from stdin")
-	optG      = flag.Bool("g", false, "disable hardware acceleration")
 	// optU = flag.String("u", "", "gemarkeerde nodes in UD")
 	// optE = flag.String("e", "", "gemarkeerde nodes in extended UD")
 )
@@ -50,7 +49,6 @@ Opties:
     -i  : bestandsnamen en id's via stdin, één per regel
           bestandsnaam gevolgd door tab, gevolgd door id's gescheiden door spaties
           id's alleen voor xml-bestanden
-    -g  : hardwareversnelling uitschakelen
 
 
 Gebruik:

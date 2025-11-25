@@ -189,7 +189,7 @@ void myGLogFunc(const gchar *log_domain, GLogLevelFlags log_level,
 }
 */
 
-void run(char const *url, char const *title, int noHWAccel) {
+void run(char const *url, char const *title) {
     static char buf[1000];
     GtkBuilder *builder;
     GError *error = NULL;
@@ -205,14 +205,7 @@ void run(char const *url, char const *title, int noHWAccel) {
     g_log_set_default_handler(myGLogFunc, NULL);
     */
 
-    int argc = 1;
-    char **argv = (char **)malloc(2 * sizeof(char *));
-    argv[0] = strdup("alpinoviewer");
-    if (noHWAccel) {
-        argv[1] = strdup("--gegl-disable-opencl");
-        argc = 2;
-    }
-    gtk_init(&argc, &argv);
+    gtk_init(NULL, NULL);
 
     builder = gtk_builder_new();
     if (!gtk_builder_add_from_string(
