@@ -1,5 +1,4 @@
 //go:build wk41
-// +build wk41
 
 package main
 

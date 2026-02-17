@@ -1,5 +1,4 @@
 //go:build nodbxml
-// +build nodbxml
 
 package main
 
