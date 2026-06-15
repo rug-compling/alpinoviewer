@@ -428,7 +428,7 @@ table.attr tr td.lbl {
 
 		}
 		if strings.HasPrefix(line, "<text ") && a != "" {
-			line = "<text onmouseover=\"tooltip.show('" + html.EscapeString(a) + "')\" onmouseout=\"tooltip.hide()\"" + line[5:]
+			line = "<text onmouseover=\"tooltip.show('" + html.EscapeString(slescape(a)) + "')\" onmouseout=\"tooltip.hide()\"" + line[5:]
 		}
 		if strings.HasPrefix(line, "</a>") {
 			line = ""
@@ -603,4 +603,8 @@ func mkSentence(ctx *TreeContext) string {
 		buf.WriteString("</span>")
 	}
 	return buf.String()
+}
+
+func slescape(s string) string {
+	return strings.ReplaceAll(s, "\\", "&#92;")
 }
